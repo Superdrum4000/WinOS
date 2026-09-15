@@ -19,8 +19,8 @@ kernel/kernel.bin: kernel/kernel.elf
 kernel/kernel.elf: kernel/kernel.o
 	$(LD) $(LDFLAGS) -o kernel/kernel.elf kernel/kernel.o
 
-kernel/kernel.o: kernel/kernel.c kernel/io.h
-	$(CC) $(CFLAGS) -c kernel/kernel.c -o kernel/kernel.o
+kernel/kernel.o: kernel/core/kernel.c kernel/io/io.h
+	$(CC) $(CFLAGS) -I kernel/io -c kernel/core/kernel.c -o kernel/kernel.o
 
 clean:
 	rm -f boot/boot.bin
