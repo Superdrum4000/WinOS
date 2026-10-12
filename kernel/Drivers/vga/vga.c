@@ -116,23 +116,15 @@ void backspace(void)
 {
     erase_cursor();
 
-    if (cursor_x > 0)
-    {
-        cursor_x--;
-    }
-    else if (cursor_y > 0)
-    {
-        cursor_y--;
-        cursor_x = 79;
-    }
-    else
+    if (cursor_x == 0)
     {
         draw_cursor();
         return;
     }
 
-    volatile unsigned char *vga = (volatile unsigned char *)0xB8000;
+    cursor_x--;
 
+    volatile unsigned char *vga = (volatile unsigned char *)0xB8000;
     int position = cursor_y * 80 + cursor_x;
     int offset = position * 2;
 

@@ -52,10 +52,17 @@ char keyboard_translate(unsigned char scancode)
         case 0x30: return 'b';
         case 0x31: return 'n';
 
+        
         // secondary keys
-        case 0x39: return ' ';
-        case 0x1C: return '\n';
-        case 0x0E: return '\b';
+        case 0x39: return ' ';   // Space
+        case 0x1C: return '\n';  // Enter
+        case 0x0E: return '\b';  // Backspace
+
+        // Simple punctuation
+        case 0x33: return '.';   // Period key (verify in QEMU)
+        case 0x32: return ',';   // Comma key (verify in QEMU)
+        case 0x34: return '/';   // Slash key (verify in QEMU)
+
 
 
         default:
