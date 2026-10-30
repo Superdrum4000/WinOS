@@ -2,7 +2,7 @@
 #define KERNEL_H
 
 #define WINOS_NAME     "WinOS"
-#define WINOS_VERSION  "0.5"
+#define WINOS_VERSION  "0.4"
 
 void kernel_main(void);
 
