@@ -1,10 +1,13 @@
 #include "kernel.h"
 #include "vga.h"
 #include "shell.h"
+#include "memory/heap.h"
 
 void kernel_main(void)
 {
     vga_init();
+    heap_init();
+    print("Heap Ready\n");
 
     print("Kernel successfully started !\n");
     print("Initializing drivers...\n");

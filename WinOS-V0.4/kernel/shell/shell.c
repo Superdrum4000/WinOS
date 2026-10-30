@@ -4,6 +4,7 @@
 #include "keyboard.h"
 #include "string.h"
 #include "io.h"
+#include "memory/heap.h"
 
 /* =====================================================================
  * Commands
@@ -19,6 +20,8 @@ static void cmd_clear(const char *args);
 static void cmd_echo(const char *args);
 static void cmd_version(const char *args);
 static void cmd_reboot(const char *args);
+static void cmd_mem(const char *args);
+static void cmd_memtest(const char *args);
 
 struct command
 {
@@ -34,6 +37,9 @@ static const struct command commands[] =
     { "echo",    "print a text (echo hello)",   cmd_echo    },
     { "version", "show the WinOS version",      cmd_version },
     { "reboot",  "restart the computer",        cmd_reboot  },
+    { "mem",     "show the memory usage",       cmd_mem     },
+    { "memtest", "test kmalloc and kfree",      cmd_memtest },
+
 };
 
 #define COMMAND_COUNT (sizeof(commands) / sizeof(commands[0]))
@@ -96,6 +102,54 @@ static void cmd_reboot(const char *args)
     {
         asm volatile ("cli; hlt");
     }
+}
+
+static void cmd_mem(const char *args)
+{
+    (void)args;
+
+    unsigned int used, free, blocks;      // trois boîtes vides
+    heap_stats(&used, &free, &blocks);    // & = "l'adresse de" chaque boîte
+
+    print("Heap: ");
+    print_dec(used);
+    print(" bytes used, ");
+    print_dec(free);
+    print(" bytes free, ");
+    print_dec(blocks);
+    print(" block(s)\n");
+}
+
+static void cmd_memtest(const char *args)
+{
+    (void)args;
+
+    print("1. start         ");
+    cmd_mem(0);
+
+    char *a = kmalloc(100);
+    print("2. kmalloc(100)  ");
+    cmd_mem(0);
+
+    char *b = kmalloc(50);
+    print("3. kmalloc(50)   ");
+    cmd_mem(0);
+
+    kfree(a);
+    print("4. kfree(a)      ");
+    cmd_mem(0);
+
+    kfree(b);
+    print("5. kfree(b)      ");
+    cmd_mem(0);
+
+    print("6. kfree(b) again -> ");
+    print_dec(kfree(b));
+    new_line();
+
+    print("7. kfree(0x50)    -> ");
+    print_dec(kfree((void *)0x50));
+    new_line();
 }
 
 /* =====================================================================
