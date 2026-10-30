@@ -23,9 +23,9 @@ CFLAGS  = -ffreestanding -fno-stack-protector -fno-asynchronous-unwind-tables \
           -fno-builtin -nostdlib -O1 -Wall -Wextra $(INCLUDES)
 LDFLAGS = -T linker/linker.ld
 
-C_SOURCES = $(shell find kernel -name '*.c')
+C_SOURCES = $(shell find kernel -not -name '._*' -name '*.c')
 OBJECTS   = $(BUILD)/kernel/entry.o $(patsubst %.c,$(BUILD)/%.o,$(C_SOURCES))
-HEADERS   = $(shell find kernel -name '*.h')
+HEADERS   = $(shell find kernel -not -name '._*' -name '*.h')
 
 .PHONY: all run clean
 
@@ -45,7 +45,7 @@ $(BUILD)/boot.bin: boot/boot.asm $(BUILD)/kernel/kernel.pad.bin
 
 # kernel complété avec des zéros jusqu'à un multiple de 512 octets
 $(BUILD)/kernel/kernel.pad.bin: $(BUILD)/kernel/kernel.bin
-	dd if=$< of=$@ bs=512 conv=sync status=none
+	dd if=$< of=$@ bs=512 conv=sync 2>/dev/null
 
 $(BUILD)/kernel/kernel.bin: $(BUILD)/kernel/kernel.elf
 	$(OBJCOPY) -O binary $< $@
