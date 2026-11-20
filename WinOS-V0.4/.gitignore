@@ -1,7 +1,7 @@
-  build/
-  *.o
-  *.bin
-  *.elf
-  *.img
-  ._*
-  .DS_Store
+build/
+*.o
+*.bin
+*.elf
+*.img
+._*
+.DS_Store

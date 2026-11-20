@@ -5,6 +5,7 @@
 #include "string.h"
 #include "io.h"
 #include "memory/heap.h"
+#include "fs/fs.h"         
 
 /* =====================================================================
  * Commands
@@ -22,6 +23,11 @@ static void cmd_version(const char *args);
 static void cmd_reboot(const char *args);
 static void cmd_mem(const char *args);
 static void cmd_memtest(const char *args);
+static void cmd_write(const char *args);
+static void cmd_cat(const char *args);
+static void cmd_rm(const char *args);
+static void cmd_touch(const char *args);
+static void cmd_ls(const char *args);
 
 struct command
 {
@@ -39,6 +45,11 @@ static const struct command commands[] =
     { "reboot",  "restart the computer",        cmd_reboot  },
     { "mem",     "show the memory usage",       cmd_mem     },
     { "memtest", "test kmalloc and kfree",      cmd_memtest },
+    { "write",   "write a text in a file",      cmd_write   },
+    { "cat",     "show a file",                 cmd_cat     },
+    { "rm",      "delete a file",               cmd_rm      },
+    { "touch",   "create an empty file",        cmd_touch   },
+    { "ls",      "list the files",              cmd_ls      },
 
 };
 
@@ -150,6 +161,68 @@ static void cmd_memtest(const char *args)
     print("7. kfree(0x50)    -> ");
     print_dec(kfree((void *)0x50));
     new_line();
+}
+
+static void cmd_touch(const char *args)
+{
+    int result = fs_create(args);
+    if (result == 1)      print("Invalid name\n");
+    else if (result == 2) print("This file already exists\n");
+    else if (result == 3) print("Out of memory\n");
+}
+
+static void cmd_ls(const char *args)
+{
+    (void)args;
+    struct file *f = fs_first();
+    if (f == 0) { print("No file\n"); return; }
+
+    while (f != 0)
+    {
+        print(f->name);
+        print("  (");
+        print_dec(f->size);
+        print(" bytes)\n");
+        f = f->next;
+    }
+}
+
+static void cmd_write(const char *args)
+{
+    // séparer le nom du texte : "notes hello world" -> "notes" + "hello world"
+    char name[FS_NAME_MAX];
+    unsigned int i = 0;
+
+    while (args[i] != ' ' && args[i] != '\0')
+    {
+        if (i >= FS_NAME_MAX - 1) { print("Invalid name\n"); return; }
+        name[i] = args[i];
+        i++;
+    }
+    name[i] = '\0';
+
+    const char *text = args + i;        // sauter les espaces avant le texte
+    while (*text == ' ') text++;
+
+    int result = fs_write(name, text);
+    if (result == 1)      print("File not found (use touch first)\n");
+    else if (result == 3) print("Out of memory\n");
+}
+
+static void cmd_cat(const char *args)
+{
+    struct file *f = fs_find(args);
+    if (f == 0) { print("File not found\n"); return; }
+
+    // le contenu n'a pas de '\0' à la fin : on affiche "size" caractères
+    for (unsigned int i = 0; i < f->size; i++)
+        put_char(f->data[i]);
+    new_line();
+}
+
+static void cmd_rm(const char *args)
+{
+    if (fs_delete(args) == 1) print("File not found\n");
 }
 
 /* =====================================================================
